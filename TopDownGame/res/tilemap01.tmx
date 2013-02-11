@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="25" height="18" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="tileset32" tilewidth="32" tileheight="32">
+  <image source="tileset32.png" trans="ff00ff" width="480" height="1216"/>
+  <tile id="10">
+   <properties>
+    <property name="blocked" value="true"/>
+   </properties>
+  </tile>
+  <tile id="274">
+   <properties>
+    <property name="blocked" value="true"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Calque de Tile 1" width="25" height="18">
+  <data encoding="base64" compression="zlib">
+   eJzjZmBg4KYDZmWkHSbGDhUq2vGcATdG1iNKRX/A3I9uBy3CCtkOYRxq8PmNWnaQ4w9RNDtgWBiHGnLswJWWqOkPXJhYO0QpsIMYM4n1hwgU49IrQgU7kO0hVpzc+BDBgWkZ5+hhQkxZNljKXWrZQWsMACXgGak=
+  </data>
+ </layer>
+</map>
