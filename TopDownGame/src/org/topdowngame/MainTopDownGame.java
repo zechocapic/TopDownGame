@@ -17,9 +17,11 @@ public class MainTopDownGame extends BasicGame
 	private static final int tileSize = 32;
 	private static final int resolutionX = 800;
 	private static final int resolutionY = 600;
+	private static int margin = 2;
 	
 	private Animation playerSprite, movingUp, movingDown, movingLeft, movingRight;
 	private float playerX = 100f, playerY = 100f;
+	
 	private TiledMap theMap;
 	
 	private float cameraX = 400;
@@ -58,8 +60,8 @@ public class MainTopDownGame extends BasicGame
 		if (input.isKeyDown(Input.KEY_UP))
 		{
 			playerSprite = movingUp;
-			int tileIdLeft = theMap.getTileId((int)Math.floor((playerX + delta * 0.1f)/tileSize), (int)Math.floor((playerY + delta * 0.1f)/tileSize), 0);
-			int tileIdRight = theMap.getTileId((int)Math.floor((playerX + tileSize + delta * 0.1f)/tileSize), (int)Math.floor((playerY + delta * 0.1f)/tileSize), 0);
+			int tileIdLeft = theMap.getTileId((int)Math.floor((playerX)/tileSize), (int)Math.floor((playerY - margin)/tileSize), 0);
+			int tileIdRight = theMap.getTileId((int)Math.floor((playerX + tileSize)/tileSize), (int)Math.floor((playerY - margin)/tileSize), 0);
 			if (!(theMap.getTileProperty(tileIdLeft, "blocked", "false").equals("true") || theMap.getTileProperty(tileIdRight, "blocked", "false").equals("true")))
 			{
 				playerY -= delta * 0.1f;
@@ -71,8 +73,8 @@ public class MainTopDownGame extends BasicGame
 		if (input.isKeyDown(Input.KEY_DOWN))
 		{
 			playerSprite = movingDown;
-			int tileIdLeft = theMap.getTileId((int)Math.floor((playerX + delta * 0.1f)/tileSize), (int)Math.floor((playerY + tileSize + delta * 0.1f)/tileSize), 0);
-			int tileIdRight = theMap.getTileId((int)Math.floor((playerX + tileSize + delta * 0.1f)/tileSize), (int)Math.floor((playerY + tileSize + delta * 0.1f)/tileSize), 0);
+			int tileIdLeft = theMap.getTileId((int)Math.floor((playerX)/tileSize), (int)Math.floor((playerY + tileSize + margin)/tileSize), 0);
+			int tileIdRight = theMap.getTileId((int)Math.floor((playerX + tileSize)/tileSize), (int)Math.floor((playerY + tileSize + margin)/tileSize), 0);
 			if (!(theMap.getTileProperty(tileIdLeft, "blocked", "false").equals("true") || theMap.getTileProperty(tileIdRight, "blocked", "false").equals("true")))
 			{
 				playerY += delta * 0.1f;
@@ -84,8 +86,8 @@ public class MainTopDownGame extends BasicGame
 		if (input.isKeyDown(Input.KEY_LEFT))
 		{
 			playerSprite = movingLeft;
-			int tileIdUp = theMap.getTileId((int)Math.floor((playerX - delta * 0.1f)/tileSize), (int)Math.floor((playerY)/tileSize), 0);
-			int tileIdDown = theMap.getTileId((int)Math.floor((playerX - delta * 0.1f)/tileSize), (int)Math.floor((playerY + tileSize + delta * 0.1f)/tileSize), 0);
+			int tileIdUp = theMap.getTileId((int)Math.floor((playerX - margin)/tileSize), (int)Math.floor((playerY)/tileSize), 0);
+			int tileIdDown = theMap.getTileId((int)Math.floor((playerX - margin)/tileSize), (int)Math.floor((playerY + tileSize)/tileSize), 0);
 			if (!(theMap.getTileProperty(tileIdUp, "blocked", "false").equals("true") || theMap.getTileProperty(tileIdDown, "blocked", "false").equals("true")))
 			{
 				playerX -= delta * 0.1f;
@@ -97,8 +99,8 @@ public class MainTopDownGame extends BasicGame
 		if (input.isKeyDown(Input.KEY_RIGHT))
 		{
 			playerSprite = movingRight;
-			int tileIdUp = theMap.getTileId((int)Math.floor((playerX + tileSize + delta * 0.1f)/tileSize), (int)Math.floor((playerY)/tileSize), 0);
-			int tileIdDown = theMap.getTileId((int)Math.floor((playerX + tileSize + delta * 0.1f)/tileSize), (int)Math.floor((playerY + tileSize + delta * 0.1f)/tileSize), 0);
+			int tileIdUp = theMap.getTileId((int)Math.floor((playerX + tileSize + margin)/tileSize), (int)Math.floor((playerY)/tileSize), 0);
+			int tileIdDown = theMap.getTileId((int)Math.floor((playerX + tileSize + margin)/tileSize), (int)Math.floor((playerY + tileSize)/tileSize), 0);
 			if (!(theMap.getTileProperty(tileIdUp, "blocked", "false").equals("true") || theMap.getTileProperty(tileIdDown, "blocked", "false").equals("true")))
 			{
 				playerX += delta * 0.1f;
