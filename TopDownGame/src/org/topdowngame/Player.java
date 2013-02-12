@@ -1,7 +1,10 @@
 package org.topdowngame;
 
+import org.newdawn.slick.Animation;
+
 public class Player {
-	private float x = 100f, y = 100f;
+	private float x, y;
+	private Animation movement;
 	
 	public Player(float x, float y) {
 		this.x = x;
@@ -22,6 +25,14 @@ public class Player {
 
 	public void setY(float y) {
 		this.y = y;
+	}
+
+	public Animation getMovement() {
+		return movement;
+	}
+
+	public void setMovement(Animation movement) {
+		this.movement = movement;
 	}
 
 }
