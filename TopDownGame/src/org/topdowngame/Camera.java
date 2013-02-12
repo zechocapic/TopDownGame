@@ -1,6 +1,7 @@
 package org.topdowngame;
 
-public class Camera {
+public class Camera 
+{
 	private float x;
 	private float y;
 

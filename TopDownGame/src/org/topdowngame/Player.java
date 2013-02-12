@@ -2,7 +2,9 @@ package org.topdowngame;
 
 import org.newdawn.slick.Animation;
 
-public class Player {
+public class Player
+{
+	
 	private float x, y;
 	private Animation movement;
 	
