@@ -30,6 +30,7 @@ public class MainTopDownGame extends BasicGame
 	private AStarPathFinder pathFinder;
 	private Path path;
 	private int playerEtape = 0;
+	private boolean destClicked = false;
 	
 	// Declaration of player's animation. Need to be integrated in Player class ideally 
 	private Animation movingUp, movingDown, movingLeft, movingRight;
@@ -47,12 +48,19 @@ public class MainTopDownGame extends BasicGame
 		theMap = new TiledMap("res/tilemap01.tmx");
 		thePTBMap = new PropertyTileBasedMap(theMap);
 		camera = new Camera(0f, 0f);
-		meMyself = new Player(200f, 64f);
+		meMyself = new Player(64f, 64f);
 		pathFinder = new AStarPathFinder(thePTBMap, 100, false);
-		path = pathFinder.findPath(null, 2, 7, 14, 7);
-		for (int i=0; i < path.getLength(); i++)
+		path = pathFinder.findPath(null, 2, 7, 11, 7);
+		if (path != null)
 		{
-			System.out.println("Etape" + i + " PathX=" + path.getX(i) + " PathY=" + path.getY(i));
+			for (int i=0; i < path.getLength(); i++)
+			{
+				System.out.println("Etape" + i + " PathX=" + path.getX(i) + " PathY=" + path.getY(i));
+			}			
+		}
+		else
+		{
+			System.out.println("No path found");
 		}
 		
 		
@@ -131,53 +139,63 @@ public class MainTopDownGame extends BasicGame
 			}
 		}
 		
-		if (playerEtape != path.getLength())
+		// test clic souris
+		if (input.isMousePressed(Input.MOUSE_LEFT_BUTTON))
 		{
-			// testing if player and stepdestination are close enough to consider it's ok
-			if ((meMyself.getX() < path.getX(playerEtape)*tileSize) && (meMyself.getX() + 1 > path.getX(playerEtape)*tileSize))
+			destClicked = !destClicked;
+		}
+		
+		if (path != null)
+		{
+			if ( (playerEtape != path.getLength()) && destClicked)
 			{
-				meMyself.setX(path.getX(playerEtape)*tileSize);
-			}
-			else if ((meMyself.getX() > path.getX(playerEtape)*tileSize) && (meMyself.getX() - 1 < path.getX(playerEtape)*tileSize))
-			{
-				meMyself.setX(path.getX(playerEtape)*tileSize);
-			}
-			else if ((meMyself.getY() < path.getY(playerEtape)*tileSize) && (meMyself.getY() + 1 > path.getY(playerEtape)*tileSize))
-			{
-				meMyself.setY(path.getY(playerEtape)*tileSize);
-			}
-			else if ((meMyself.getY() > path.getY(playerEtape)*tileSize) && (meMyself.getY() - 1 < path.getY(playerEtape)*tileSize))
-			{
-				meMyself.setY(path.getY(playerEtape)*tileSize);
+				// testing if player and stepdestination are close enough to consider it's ok
+				if ((meMyself.getX() < path.getX(playerEtape)*tileSize) && (meMyself.getX() + 1 > path.getX(playerEtape)*tileSize))
+				{
+					meMyself.setX(path.getX(playerEtape)*tileSize);
+				}
+				else if ((meMyself.getX() > path.getX(playerEtape)*tileSize) && (meMyself.getX() - 1 < path.getX(playerEtape)*tileSize))
+				{
+					meMyself.setX(path.getX(playerEtape)*tileSize);
+				}
+				else if ((meMyself.getY() < path.getY(playerEtape)*tileSize) && (meMyself.getY() + 1 > path.getY(playerEtape)*tileSize))
+				{
+					meMyself.setY(path.getY(playerEtape)*tileSize);
+				}
+				else if ((meMyself.getY() > path.getY(playerEtape)*tileSize) && (meMyself.getY() - 1 < path.getY(playerEtape)*tileSize))
+				{
+					meMyself.setY(path.getY(playerEtape)*tileSize);
+				}
+				
+				// moving player to stepdestination
+				if (meMyself.getY() > path.getY(playerEtape)*tileSize)
+				{
+					meMyself.setY(meMyself.getY() - delta * 0.1f);
+					meMyself.setMovement(movingUp);
+				}
+				else if (meMyself.getY() < path.getY(playerEtape)*tileSize)
+				{
+					meMyself.setY(meMyself.getY() + delta * 0.1f);
+					meMyself.setMovement(movingDown);
+				}
+				else if (meMyself.getX() > path.getX(playerEtape)*tileSize)
+				{
+					meMyself.setX(meMyself.getX() - delta * 0.1f);
+					meMyself.setMovement(movingLeft);
+				}
+				else if (meMyself.getX() < path.getX(playerEtape)*tileSize)
+				{
+					meMyself.setX(meMyself.getX() + delta * 0.1f);
+					meMyself.setMovement(movingRight);
+				}
+				
+				//testing if player has arrived at destination
+				if ((meMyself.getX() == path.getX(playerEtape)*tileSize) && (meMyself.getY() == path.getY(playerEtape)*tileSize))
+				{
+					playerEtape++;
+				}
 			}
 			
-			// moving player to stepdestination
-			if (meMyself.getX() < path.getX(playerEtape)*tileSize)
-			{
-				meMyself.setX(meMyself.getX() + delta * 0.1f);
-				meMyself.setMovement(movingRight);
-			}
-			else if (meMyself.getX() > path.getX(playerEtape)*tileSize)
-			{
-				meMyself.setX(meMyself.getX() - delta * 0.1f);
-				meMyself.setMovement(movingLeft);
-			}
-			else if (meMyself.getY() < path.getY(playerEtape)*tileSize)
-			{
-				meMyself.setY(meMyself.getY() + delta * 0.1f);
-				meMyself.setMovement(movingDown);
-			}
-			else if (meMyself.getY() > path.getY(playerEtape)*tileSize)
-			{
-				meMyself.setY(meMyself.getY() - delta * 0.1f);
-				meMyself.setMovement(movingUp);
-			}
-			
-			//testing if player has arrived at destination
-			if ((meMyself.getX() == path.getX(playerEtape)*tileSize) && (meMyself.getY() == path.getY(playerEtape)*tileSize))
-			{
-				playerEtape++;
-			}
 		}
 	}
 	
@@ -202,8 +220,10 @@ public class MainTopDownGame extends BasicGame
 		g.drawString("playerY = " + (meMyself.getY() + camera.getY()), 600, 40);
 		g.drawString("mouseX = " + Mouse.getX(), 600, 60);
 		g.drawString("mouseY = " + (600 - Mouse.getY()), 600, 80);
-		g.drawString("Tile blocked ? " + thePTBMap.blocked(null, 0, 0), 600, 100);
-		g.drawString("Path length = " + path.getLength(), 600, 120);
+		g.drawString("mouseTileX = " + (int)Mouse.getX()/tileSize, 600, 100);
+		g.drawString("mouseTileY = " + (int)(600 - Mouse.getY())/tileSize, 600, 120);
+		g.drawString("Tile blocked ? " + thePTBMap.blocked(null, 0, 0), 600, 140);
+		if (path != null) { g.drawString("Path length = " + path.getLength(), 600, 160);}
 		//g.drawString("PathX=" + path.getX(0) + " PathY=" + path.getY(0), 600, 140);
 		//g.drawString("PathX=" + path.getX(1) + " PathY=" + path.getY(1), 600, 160);
 		//int mouseX = (int)Math.floor(((Mouse.getX() + 400)/tileSize));
