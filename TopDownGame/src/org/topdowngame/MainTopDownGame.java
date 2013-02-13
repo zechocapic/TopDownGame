@@ -20,7 +20,6 @@ public class MainTopDownGame extends BasicGame
 	private static final int tileSize = 32;
 	private static final int resolutionX = 800;
 	private static final int resolutionY = 600;
-	private static int margin = 2;
 	
 	// Declaration of map, camera and player
 	private TiledMap theMap;
@@ -30,7 +29,6 @@ public class MainTopDownGame extends BasicGame
 	private AStarPathFinder pathFinder;
 	private Path path;
 	private int playerEtape = 0;
-	private boolean destClicked = false;
 	
 	// Declaration of player's animation. Need to be integrated in Player class ideally 
 	private Animation movingUp, movingDown, movingLeft, movingRight;
@@ -50,21 +48,9 @@ public class MainTopDownGame extends BasicGame
 		camera = new Camera(0f, 0f);
 		meMyself = new Player(64f, 64f);
 		pathFinder = new AStarPathFinder(thePTBMap, 100, false);
-		/*path = pathFinder.findPath(null, 2, 7, 11, 7);
-		if (path != null)
-		{
-			for (int i=0; i < path.getLength(); i++)
-			{
-				System.out.println("Etape" + i + " PathX=" + path.getX(i) + " PathY=" + path.getY(i));
-			}			
-		}
-		else
-		{
-			System.out.println("No path found");
-		}*/
-		
 		
 		// player's animation. Need a better way to deal with it
+		
 		int duration[] = {200, 200, 200};
 		SpriteSheet character = new SpriteSheet("res/monsters.png", tileSize, tileSize);
 		Image[] walkUp = {character.getSubImage(6, 1), character.getSubImage(7, 1), character.getSubImage(8, 1)};
@@ -77,7 +63,7 @@ public class MainTopDownGame extends BasicGame
 		movingLeft = new Animation(walkLeft, duration, true);
 		movingRight = new Animation(walkRight, duration, true);
 		
-		meMyself.setMovement(movingDown);		
+		meMyself.setMovement(movingDown);
 	}
 	
 	// Update method needed by superclass
@@ -87,65 +73,16 @@ public class MainTopDownGame extends BasicGame
 		// Declaration and initialization of object that will monitor keypresses
 		Input input = gc.getInput();
 		
-		// player going up
-		if (input.isKeyDown(Input.KEY_UP))
-		{
-			meMyself.setMovement(movingUp);
-			int tileIdLeft = theMap.getTileId((int)Math.floor((meMyself.getX())/tileSize), (int)Math.floor((meMyself.getY() - margin)/tileSize), 0);
-			int tileIdRight = theMap.getTileId((int)Math.floor((meMyself.getX() + tileSize)/tileSize), (int)Math.floor((meMyself.getY() - margin)/tileSize), 0);
-			if (!(theMap.getTileProperty(tileIdLeft, "blocked", "false").equals("true") || theMap.getTileProperty(tileIdRight, "blocked", "false").equals("true")))
-			{
-				meMyself.setY(meMyself.getY() - delta * 0.1f);
-				camera.setY(camera.getY() + delta * 0.1f);
-			}
-		}
+		// camera management
+		camera.keyboardMove(input, delta);
 		
-		// player going down
-		if (input.isKeyDown(Input.KEY_DOWN))
-		{
-			meMyself.setMovement(movingDown);
-			int tileIdLeft = theMap.getTileId((int)Math.floor((meMyself.getX())/tileSize), (int)Math.floor((meMyself.getY() + tileSize + margin)/tileSize), 0);
-			int tileIdRight = theMap.getTileId((int)Math.floor((meMyself.getX() + tileSize)/tileSize), (int)Math.floor((meMyself.getY() + tileSize + margin)/tileSize), 0);
-			if (!(theMap.getTileProperty(tileIdLeft, "blocked", "false").equals("true") || theMap.getTileProperty(tileIdRight, "blocked", "false").equals("true")))
-			{
-				meMyself.setY(meMyself.getY() + delta * 0.1f);
-				camera.setY(camera.getY() - delta * 0.1f);
-			}
-		}
-		
-		// player going left
-		if (input.isKeyDown(Input.KEY_LEFT))
-		{
-			meMyself.setMovement(movingLeft);
-			int tileIdUp = theMap.getTileId((int)Math.floor((meMyself.getX() - margin)/tileSize), (int)Math.floor((meMyself.getY())/tileSize), 0);
-			int tileIdDown = theMap.getTileId((int)Math.floor((meMyself.getX() - margin)/tileSize), (int)Math.floor((meMyself.getY() + tileSize)/tileSize), 0);
-			if (!(theMap.getTileProperty(tileIdUp, "blocked", "false").equals("true") || theMap.getTileProperty(tileIdDown, "blocked", "false").equals("true")))
-			{
-				meMyself.setX(meMyself.getX() - delta * 0.1f);
-				camera.setX(camera.getX() + delta * 0.1f);
-			}
-		}
-		
-		// player going right
-		if (input.isKeyDown(Input.KEY_RIGHT))
-		{
-			meMyself.setMovement(movingRight);
-			int tileIdUp = theMap.getTileId((int)Math.floor((meMyself.getX() + tileSize + margin)/tileSize), (int)Math.floor((meMyself.getY())/tileSize), 0);
-			int tileIdDown = theMap.getTileId((int)Math.floor((meMyself.getX() + tileSize + margin)/tileSize), (int)Math.floor((meMyself.getY() + tileSize)/tileSize), 0);
-			if (!(theMap.getTileProperty(tileIdUp, "blocked", "false").equals("true") || theMap.getTileProperty(tileIdDown, "blocked", "false").equals("true")))
-			{
-				meMyself.setX(meMyself.getX() + delta * 0.1f);
-				camera.setX(camera.getX() - delta * 0.1f);
-			}
-		}
-		
-		// test clic souris
+		// mouse click test
 		if (input.isMousePressed(Input.MOUSE_LEFT_BUTTON))
 		{
 			int playerXTiles = (int)(meMyself.getX()/tileSize);
 			int playerYTiles = (int)(meMyself.getY()/tileSize);
-			int mouseXTiles = (int)(Mouse.getX()/tileSize);
-			int mouseYTiles = (int)((600 - Mouse.getY())/tileSize);
+			int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
+			int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
 			path = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
 			playerEtape = 0;
 			if (path != null)
@@ -158,9 +95,7 @@ public class MainTopDownGame extends BasicGame
 			else
 			{
 				System.out.println("No path found");
-				
 			}
-				
 		}
 		
 		if (path != null)
@@ -185,27 +120,8 @@ public class MainTopDownGame extends BasicGame
 					meMyself.setY(path.getY(playerEtape)*tileSize);
 				}
 				
-				// moving player to stepdestination
-				if (meMyself.getY() > path.getY(playerEtape)*tileSize)
-				{
-					meMyself.setY(meMyself.getY() - delta * 0.1f);
-					meMyself.setMovement(movingUp);
-				}
-				else if (meMyself.getY() < path.getY(playerEtape)*tileSize)
-				{
-					meMyself.setY(meMyself.getY() + delta * 0.1f);
-					meMyself.setMovement(movingDown);
-				}
-				else if (meMyself.getX() > path.getX(playerEtape)*tileSize)
-				{
-					meMyself.setX(meMyself.getX() - delta * 0.1f);
-					meMyself.setMovement(movingLeft);
-				}
-				else if (meMyself.getX() < path.getX(playerEtape)*tileSize)
-				{
-					meMyself.setX(meMyself.getX() + delta * 0.1f);
-					meMyself.setMovement(movingRight);
-				}
+				// moving player to destination
+				meMyself.goToDest(path.getX(playerEtape)*tileSize, path.getY(playerEtape)*tileSize, delta, movingUp, movingDown, movingLeft, movingRight);
 				
 				//testing if player has arrived at destination
 				if ((meMyself.getX() == path.getX(playerEtape)*tileSize) && (meMyself.getY() == path.getY(playerEtape)*tileSize))
@@ -239,17 +155,7 @@ public class MainTopDownGame extends BasicGame
 		g.drawString("mouseY = " + (600 - Mouse.getY()), 600, 80);
 		g.drawString("mouseTileX = " + (int)Mouse.getX()/tileSize, 600, 100);
 		g.drawString("mouseTileY = " + (int)(600 - Mouse.getY())/tileSize, 600, 120);
-		g.drawString("Tile blocked ? " + thePTBMap.blocked(null, 0, 0), 600, 140);
 		if (path != null) { g.drawString("Path length = " + path.getLength(), 600, 160);}
-		//g.drawString("PathX=" + path.getX(0) + " PathY=" + path.getY(0), 600, 140);
-		//g.drawString("PathX=" + path.getX(1) + " PathY=" + path.getY(1), 600, 160);
-		//int mouseX = (int)Math.floor(((Mouse.getX() + 400)/tileSize));
-		//int mouseY = (int)Math.floor((900 - Mouse.getY())/tileSize);
-		//int tileId =  11;
-		//tileId = theMap.getTileId(0, 0, 0);
-		//tileId = theMap.getTileId((int)Math.floor(((Mouse.getX() + 400)/tileSize)), (int)Math.floor((900 - Mouse.getY())/tileSize), 0);
-		//g.drawString("Tile Id = " + tileId, 600, 100);
-		//g.drawString("Tile blocked ? " + theMap.getTileProperty(tileId, "blocked", "false"), 600, 120);		
 	}
 	
 	// Main method
