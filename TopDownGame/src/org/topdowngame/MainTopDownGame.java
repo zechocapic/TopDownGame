@@ -25,7 +25,7 @@ public class MainTopDownGame extends BasicGame
 	private TiledMap theMap;
 	private PropertyTileBasedMap thePTBMap;
 	private Camera camera;
-	private Player meMyself;
+	private Player unitOne;
 	private AStarPathFinder pathFinder;
 	private Path path;
 	private int playerEtape = 0;
@@ -34,7 +34,8 @@ public class MainTopDownGame extends BasicGame
 	private Animation movingUp, movingDown, movingLeft, movingRight;
 	
 	// Constructor
-	public MainTopDownGame() {
+	public MainTopDownGame() 
+	{
 		super("TopDown Game v.01");
 	}
 	
@@ -42,11 +43,11 @@ public class MainTopDownGame extends BasicGame
 	@Override
 	public void init(GameContainer gc) throws SlickException 
 	{
-		// Initialisation of map, camera and player
+		// Initialization of map, camera, player, pathfinding
 		theMap = new TiledMap("res/tilemap01.tmx");
 		thePTBMap = new PropertyTileBasedMap(theMap);
 		camera = new Camera(0f, 0f);
-		meMyself = new Player(64f, 64f);
+		unitOne = new Player(64f, 64f);
 		pathFinder = new AStarPathFinder(thePTBMap, 100, false);
 		
 		// player's animation. Need a better way to deal with it
@@ -63,7 +64,7 @@ public class MainTopDownGame extends BasicGame
 		movingLeft = new Animation(walkLeft, duration, true);
 		movingRight = new Animation(walkRight, duration, true);
 		
-		meMyself.setMovement(movingDown);
+		unitOne.setMovement(movingDown);
 	}
 	
 	// Update method needed by superclass
@@ -76,55 +77,26 @@ public class MainTopDownGame extends BasicGame
 		// camera management
 		camera.keyboardMove(input, delta);
 		
-		// mouse click test
-		if (input.isMousePressed(Input.MOUSE_LEFT_BUTTON))
+		// setting destination
+		if (input.isMousePressed(Input.MOUSE_RIGHT_BUTTON))
 		{
-			int playerXTiles = (int)(meMyself.getX()/tileSize);
-			int playerYTiles = (int)(meMyself.getY()/tileSize);
+			int playerXTiles = (int)(unitOne.getX()/tileSize);
+			int playerYTiles = (int)(unitOne.getY()/tileSize);
 			int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
 			int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
 			path = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
 			playerEtape = 0;
-			if (path != null)
-			{
-				for (int i=0; i < path.getLength(); i++)
-				{
-					System.out.println("Etape" + i + " PathX=" + path.getX(i) + " PathY=" + path.getY(i));
-				}			
-			}
-			else
-			{
-				System.out.println("No path found");
-			}
 		}
 		
 		if (path != null)
 		{
 			if ( (playerEtape != path.getLength()))
 			{
-				// testing if player and stepdestination are close enough to consider it's ok
-				if ((meMyself.getX() < path.getX(playerEtape)*tileSize) && (meMyself.getX() + 1 > path.getX(playerEtape)*tileSize))
-				{
-					meMyself.setX(path.getX(playerEtape)*tileSize);
-				}
-				else if ((meMyself.getX() > path.getX(playerEtape)*tileSize) && (meMyself.getX() - 1 < path.getX(playerEtape)*tileSize))
-				{
-					meMyself.setX(path.getX(playerEtape)*tileSize);
-				}
-				else if ((meMyself.getY() < path.getY(playerEtape)*tileSize) && (meMyself.getY() + 1 > path.getY(playerEtape)*tileSize))
-				{
-					meMyself.setY(path.getY(playerEtape)*tileSize);
-				}
-				else if ((meMyself.getY() > path.getY(playerEtape)*tileSize) && (meMyself.getY() - 1 < path.getY(playerEtape)*tileSize))
-				{
-					meMyself.setY(path.getY(playerEtape)*tileSize);
-				}
-				
 				// moving player to destination
-				meMyself.goToDest(path.getX(playerEtape)*tileSize, path.getY(playerEtape)*tileSize, delta, movingUp, movingDown, movingLeft, movingRight);
+				unitOne.goToDest(path.getX(playerEtape)*tileSize, path.getY(playerEtape)*tileSize, delta, movingUp, movingDown, movingLeft, movingRight);
 				
 				//testing if player has arrived at destination
-				if ((meMyself.getX() == path.getX(playerEtape)*tileSize) && (meMyself.getY() == path.getY(playerEtape)*tileSize))
+				if ((unitOne.getX() == path.getX(playerEtape)*tileSize) && (unitOne.getY() == path.getY(playerEtape)*tileSize))
 				{
 					playerEtape++;
 				}
@@ -136,9 +108,12 @@ public class MainTopDownGame extends BasicGame
 	@Override
 	public void render(GameContainer gc, Graphics g) throws SlickException 
 	{
-		try {
+		try 
+		{
 			Thread.sleep(10);
-		} catch (InterruptedException e) {
+		} 
+		catch (InterruptedException e) 
+		{
 			e.printStackTrace();
 		}
 		
@@ -146,11 +121,11 @@ public class MainTopDownGame extends BasicGame
 		theMap.render(0 + (int)camera.getX(), 0 + (int)camera.getY());
 		
 		// player rendering
-		meMyself.getMovement().draw(meMyself.getX() + camera.getX(), meMyself.getY() + camera.getY());
+		unitOne.getMovement().draw(unitOne.getX() + camera.getX(), unitOne.getY() + camera.getY());
 		
 		// some indicators
-		g.drawString("playerX = " + (meMyself.getX() + camera.getX()), 600, 20);
-		g.drawString("playerY = " + (meMyself.getY() + camera.getY()), 600, 40);
+		g.drawString("playerX = " + (unitOne.getX() + camera.getX()), 600, 20);
+		g.drawString("playerY = " + (unitOne.getY() + camera.getY()), 600, 40);
 		g.drawString("mouseX = " + Mouse.getX(), 600, 60);
 		g.drawString("mouseY = " + (600 - Mouse.getY()), 600, 80);
 		g.drawString("mouseTileX = " + (int)Mouse.getX()/tileSize, 600, 100);
@@ -166,10 +141,10 @@ public class MainTopDownGame extends BasicGame
 			AppGameContainer appgc = new AppGameContainer(new MainTopDownGame());
 			appgc.setDisplayMode(resolutionX, resolutionY, false);
 			appgc.start();
-		} catch (SlickException e) 
+		} 
+		catch (SlickException e) 
 		{
 			e.printStackTrace();
 		}
-		
 	}
 }
