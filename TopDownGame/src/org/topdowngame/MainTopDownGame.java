@@ -113,7 +113,10 @@ public class MainTopDownGame extends BasicGame
 				int playerYTiles = (int)(unitOne.getY()/tileSize);
 				int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
 				int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
-				path = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
+				if ((mouseXTiles < thePTBMap.getWidthInTiles()) && (mouseYTiles < thePTBMap.getHeightInTiles()) && (mouseXTiles >= 0) && (mouseYTiles >= 0))
+				{
+					path = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
+				}
 				playerEtape = 0;
 				u1selected = false;
 				System.out.println("Unit one launched");				
@@ -125,7 +128,10 @@ public class MainTopDownGame extends BasicGame
 				int playerYTiles = (int)(unitTwo.getY()/tileSize);
 				int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
 				int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
-				path2 = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
+				if ((mouseXTiles < thePTBMap.getWidthInTiles()) && (mouseYTiles < thePTBMap.getHeightInTiles()) && (mouseXTiles >= 0) && (mouseYTiles >= 0))
+				{
+					path2 = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
+				}
 				playerEtape2 = 0;
 				u2selected = false;
 				System.out.println("Unit two launched");
@@ -149,9 +155,9 @@ public class MainTopDownGame extends BasicGame
 			else
 			{
 				System.out.println("uOne Arrived");
+				path = null;
 			}
 		}
-		
 			
 		if (path2 != null)
 		{
@@ -169,6 +175,7 @@ public class MainTopDownGame extends BasicGame
 			else
 			{
 				System.out.println("uTwo Arrived");
+				path2 = null;
 			}
 		}
 	}
