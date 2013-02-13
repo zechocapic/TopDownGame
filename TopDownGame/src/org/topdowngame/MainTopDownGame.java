@@ -26,9 +26,12 @@ public class MainTopDownGame extends BasicGame
 	private PropertyTileBasedMap thePTBMap;
 	private Camera camera;
 	private Player unitOne;
+	private Player unitTwo;
 	private AStarPathFinder pathFinder;
-	private Path path;
-	private int playerEtape = 0;
+	private Path path, path2;
+	private int playerEtape = 0, playerEtape2 = 0;
+	private boolean u1selected = false;
+	private boolean u2selected = false;
 	
 	// Declaration of player's animation. Need to be integrated in Player class ideally 
 	private Animation movingUp, movingDown, movingLeft, movingRight;
@@ -48,6 +51,7 @@ public class MainTopDownGame extends BasicGame
 		thePTBMap = new PropertyTileBasedMap(theMap);
 		camera = new Camera(0f, 0f);
 		unitOne = new Player(64f, 64f);
+		unitTwo = new Player(64f, 128f);
 		pathFinder = new AStarPathFinder(thePTBMap, 100, false);
 		
 		// player's animation. Need a better way to deal with it
@@ -65,6 +69,7 @@ public class MainTopDownGame extends BasicGame
 		movingRight = new Animation(walkRight, duration, true);
 		
 		unitOne.setMovement(movingDown);
+		unitTwo.setMovement(movingDown);
 	}
 	
 	// Update method needed by superclass
@@ -77,16 +82,56 @@ public class MainTopDownGame extends BasicGame
 		// camera management
 		camera.keyboardMove(input, delta);
 		
+		// selecting units
+		if (input.isMousePressed(Input.MOUSE_LEFT_BUTTON))
+		{
+			int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
+			int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
+			int uOneXTiles = (int)(unitOne.getX()/tileSize);
+			int uOneYTiles = (int)(unitOne.getY()/tileSize);
+			if ((uOneXTiles == mouseXTiles) && (uOneYTiles == mouseYTiles))
+			{
+				u1selected = true;
+				System.out.println("Unit one has been selected");
+			}
+			int uTwoXTiles = (int)(unitTwo.getX()/tileSize);
+			int uTwoYTiles = (int)(unitTwo.getY()/tileSize);
+			if ((uTwoXTiles == mouseXTiles) && (uTwoYTiles == mouseYTiles))
+			{
+				u2selected = true;
+				System.out.println("Unit two has been selected");
+			}
+		}
+
 		// setting destination
 		if (input.isMousePressed(Input.MOUSE_RIGHT_BUTTON))
 		{
-			int playerXTiles = (int)(unitOne.getX()/tileSize);
-			int playerYTiles = (int)(unitOne.getY()/tileSize);
-			int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
-			int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
-			path = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
-			playerEtape = 0;
+			if (u1selected)
+			{
+				System.out.println("Before PathF1");
+				int playerXTiles = (int)(unitOne.getX()/tileSize);
+				int playerYTiles = (int)(unitOne.getY()/tileSize);
+				int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
+				int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
+				path = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
+				playerEtape = 0;
+				u1selected = false;
+				System.out.println("Unit one launched");				
+			}
+			if (u2selected)
+			{
+				System.out.println("Before PathF2");
+				int playerXTiles = (int)(unitTwo.getX()/tileSize);
+				int playerYTiles = (int)(unitTwo.getY()/tileSize);
+				int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
+				int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
+				path2 = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
+				playerEtape2 = 0;
+				u2selected = false;
+				System.out.println("Unit two launched");
+			}
 		}
+		
 		
 		if (path != null)
 		{
@@ -100,6 +145,30 @@ public class MainTopDownGame extends BasicGame
 				{
 					playerEtape++;
 				}
+			}
+			else
+			{
+				System.out.println("uOne Arrived");
+			}
+		}
+		
+			
+		if (path2 != null)
+		{
+			if ( (playerEtape2 != path2.getLength()))
+			{
+				// moving player to destination
+				unitTwo.goToDest(path2.getX(playerEtape2)*tileSize, path2.getY(playerEtape2)*tileSize, delta, movingUp, movingDown, movingLeft, movingRight);
+				
+				//testing if player has arrived at destination
+				if ((unitTwo.getX() == path2.getX(playerEtape2)*tileSize) && (unitTwo.getY() == path2.getY(playerEtape2)*tileSize))
+				{
+					playerEtape2++;
+				}
+			}
+			else
+			{
+				System.out.println("uTwo Arrived");
 			}
 		}
 	}
@@ -122,6 +191,7 @@ public class MainTopDownGame extends BasicGame
 		
 		// player rendering
 		unitOne.getMovement().draw(unitOne.getX() + camera.getX(), unitOne.getY() + camera.getY());
+		unitTwo.getMovement().draw(unitTwo.getX() + camera.getX(), unitTwo.getY() + camera.getY());
 		
 		// some indicators
 		g.drawString("playerX = " + (unitOne.getX() + camera.getX()), 600, 20);
