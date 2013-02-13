@@ -50,7 +50,7 @@ public class MainTopDownGame extends BasicGame
 		camera = new Camera(0f, 0f);
 		meMyself = new Player(64f, 64f);
 		pathFinder = new AStarPathFinder(thePTBMap, 100, false);
-		path = pathFinder.findPath(null, 2, 7, 11, 7);
+		/*path = pathFinder.findPath(null, 2, 7, 11, 7);
 		if (path != null)
 		{
 			for (int i=0; i < path.getLength(); i++)
@@ -61,7 +61,7 @@ public class MainTopDownGame extends BasicGame
 		else
 		{
 			System.out.println("No path found");
-		}
+		}*/
 		
 		
 		// player's animation. Need a better way to deal with it
@@ -142,12 +142,30 @@ public class MainTopDownGame extends BasicGame
 		// test clic souris
 		if (input.isMousePressed(Input.MOUSE_LEFT_BUTTON))
 		{
-			destClicked = !destClicked;
+			int playerXTiles = (int)(meMyself.getX()/tileSize);
+			int playerYTiles = (int)(meMyself.getY()/tileSize);
+			int mouseXTiles = (int)(Mouse.getX()/tileSize);
+			int mouseYTiles = (int)((600 - Mouse.getY())/tileSize);
+			path = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
+			playerEtape = 0;
+			if (path != null)
+			{
+				for (int i=0; i < path.getLength(); i++)
+				{
+					System.out.println("Etape" + i + " PathX=" + path.getX(i) + " PathY=" + path.getY(i));
+				}			
+			}
+			else
+			{
+				System.out.println("No path found");
+				
+			}
+				
 		}
 		
 		if (path != null)
 		{
-			if ( (playerEtape != path.getLength()) && destClicked)
+			if ( (playerEtape != path.getLength()))
 			{
 				// testing if player and stepdestination are close enough to consider it's ok
 				if ((meMyself.getX() < path.getX(playerEtape)*tileSize) && (meMyself.getX() + 1 > path.getX(playerEtape)*tileSize))
@@ -195,7 +213,6 @@ public class MainTopDownGame extends BasicGame
 					playerEtape++;
 				}
 			}
-			
 		}
 	}
 	
