@@ -6,7 +6,10 @@ import org.newdawn.slick.util.pathfinding.Path;
 public class Player
 {
 	private float x, y;
+	private int step = 0;
+	private boolean selected = false;
 	private Animation movement;
+	private Path path;
 	
 	public Player(float x, float y) {
 		this.x = x;
@@ -45,6 +48,26 @@ public class Player
 		this.y -= i;
 	}
 	
+	public int getStep() {
+		return step;
+	}
+
+	public void setStep(int step) {
+		this.step = step;
+	}
+
+	public void incStep() {
+		this.step++;
+	}
+	
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+
 	public Animation getMovement() {
 		return movement;
 	}
@@ -53,6 +76,14 @@ public class Player
 		this.movement = movement;
 	}
 	
+	public Path getPath() {
+		return path;
+	}
+
+	public void setPath(Path path) {
+		this.path = path;
+	}
+
 	public void goToDest (float toX, float toY, int delta, Animation movingUp, Animation movingDown, Animation movingLeft, Animation movingRight)
 	{
 		// clamping player to stepdestination when close enough 

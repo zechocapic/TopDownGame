@@ -1,5 +1,7 @@
 package org.topdowngame;
 
+import java.util.ArrayList;
+
 import org.lwjgl.input.Mouse;
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.AppGameContainer;
@@ -12,11 +14,10 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.tiled.TiledMap;
 import org.newdawn.slick.util.pathfinding.AStarPathFinder;
-import org.newdawn.slick.util.pathfinding.Path;
 
 public class MainTopDownGame extends BasicGame
 {
-	// Tilesize, resolution and margin before collision
+	// Tile size, resolution and margin before collision
 	private static final int tileSize = 32;
 	private static final int resolutionX = 800;
 	private static final int resolutionY = 600;
@@ -25,13 +26,9 @@ public class MainTopDownGame extends BasicGame
 	private TiledMap theMap;
 	private PropertyTileBasedMap thePTBMap;
 	private Camera camera;
-	private Player unitOne;
-	private Player unitTwo;
+	private ArrayList<Player> units = new ArrayList<Player>();
+	//private Player unitTwo;
 	private AStarPathFinder pathFinder;
-	private Path path, path2;
-	private int playerEtape = 0, playerEtape2 = 0;
-	private boolean u1selected = false;
-	private boolean u2selected = false;
 	
 	// Declaration of player's animation. Need to be integrated in Player class ideally 
 	private Animation movingUp, movingDown, movingLeft, movingRight;
@@ -50,8 +47,10 @@ public class MainTopDownGame extends BasicGame
 		theMap = new TiledMap("res/tilemap01.tmx");
 		thePTBMap = new PropertyTileBasedMap(theMap);
 		camera = new Camera(0f, 0f);
-		unitOne = new Player(64f, 64f);
-		unitTwo = new Player(64f, 128f);
+		for (int i = 0; i < 2; i++)
+		{
+			units.add(new Player(64f, 64f + i*tileSize));
+		}
 		pathFinder = new AStarPathFinder(thePTBMap, 100, false);
 		
 		// player's animation. Need a better way to deal with it
@@ -68,8 +67,10 @@ public class MainTopDownGame extends BasicGame
 		movingLeft = new Animation(walkLeft, duration, true);
 		movingRight = new Animation(walkRight, duration, true);
 		
-		unitOne.setMovement(movingDown);
-		unitTwo.setMovement(movingDown);
+		for (int i = 0; i < units.size(); i++)
+		{
+			units.get(i).setMovement(movingDown);
+		}
 	}
 	
 	// Update method needed by superclass
@@ -82,100 +83,74 @@ public class MainTopDownGame extends BasicGame
 		// camera management
 		camera.keyboardMove(input, delta);
 		
+		// adding new unit
+		if (input.isMousePressed(Input.MOUSE_MIDDLE_BUTTON))
+		{
+			units.add(new Player((int)((Mouse.getX() - camera.getX())), (int)((600 - Mouse.getY() - camera.getY()))));
+			units.get(units.size() - 1).setMovement(movingDown);
+		}
+		
 		// selecting units
 		if (input.isMousePressed(Input.MOUSE_LEFT_BUTTON))
 		{
-			int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
-			int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
-			int uOneXTiles = (int)(unitOne.getX()/tileSize);
-			int uOneYTiles = (int)(unitOne.getY()/tileSize);
-			if ((uOneXTiles == mouseXTiles) && (uOneYTiles == mouseYTiles))
+			for (int i = 0; i < units.size(); i++)
 			{
-				u1selected = true;
-				System.out.println("Unit one has been selected");
-			}
-			int uTwoXTiles = (int)(unitTwo.getX()/tileSize);
-			int uTwoYTiles = (int)(unitTwo.getY()/tileSize);
-			if ((uTwoXTiles == mouseXTiles) && (uTwoYTiles == mouseYTiles))
-			{
-				u2selected = true;
-				System.out.println("Unit two has been selected");
+				int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
+				int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
+				int unitXTiles = (int)(units.get(i).getX()/tileSize);
+				int unitYTiles = (int)(units.get(i).getY()/tileSize);
+				if ((unitXTiles == mouseXTiles) && (unitYTiles == mouseYTiles))
+				{
+					units.get(i).setSelected(true);
+					System.out.println("Unit " + i + " has been selected");
+				}
 			}
 		}
 
 		// setting destination
 		if (input.isMousePressed(Input.MOUSE_RIGHT_BUTTON))
 		{
-			if (u1selected)
+			for (int i = 0; i < units.size(); i++)
 			{
-				System.out.println("Before PathF1");
-				int playerXTiles = (int)(unitOne.getX()/tileSize);
-				int playerYTiles = (int)(unitOne.getY()/tileSize);
-				int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
-				int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
-				if ((mouseXTiles < thePTBMap.getWidthInTiles()) && (mouseYTiles < thePTBMap.getHeightInTiles()) && (mouseXTiles >= 0) && (mouseYTiles >= 0))
+				if (units.get(i).isSelected())
 				{
-					path = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
+					System.out.println("Before Path");
+					int playerXTiles = (int)(units.get(i).getX()/tileSize);
+					int playerYTiles = (int)(units.get(i).getY()/tileSize);
+					int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
+					int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
+					if ((mouseXTiles < thePTBMap.getWidthInTiles()) && (mouseYTiles < thePTBMap.getHeightInTiles()) && (mouseXTiles >= 0) && (mouseYTiles >= 0))
+					{
+						units.get(i).setPath(pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles));
+					}
+					units.get(i).setStep(0);
+					units.get(i).setSelected(false);
+					System.out.println("Unit " + i + " launched");				
 				}
-				playerEtape = 0;
-				u1selected = false;
-				System.out.println("Unit one launched");				
-			}
-			if (u2selected)
-			{
-				System.out.println("Before PathF2");
-				int playerXTiles = (int)(unitTwo.getX()/tileSize);
-				int playerYTiles = (int)(unitTwo.getY()/tileSize);
-				int mouseXTiles = (int)((Mouse.getX() - camera.getX())/tileSize);
-				int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
-				if ((mouseXTiles < thePTBMap.getWidthInTiles()) && (mouseYTiles < thePTBMap.getHeightInTiles()) && (mouseXTiles >= 0) && (mouseYTiles >= 0))
-				{
-					path2 = pathFinder.findPath(null, playerXTiles, playerYTiles, mouseXTiles, mouseYTiles);
-				}
-				playerEtape2 = 0;
-				u2selected = false;
-				System.out.println("Unit two launched");
 			}
 		}
 		
 		
-		if (path != null)
+		for (int i = 0; i < units.size(); i++)
 		{
-			if ( (playerEtape != path.getLength()))
+			if (units.get(i).getPath() != null)
 			{
-				// moving player to destination
-				unitOne.goToDest(path.getX(playerEtape)*tileSize, path.getY(playerEtape)*tileSize, delta, movingUp, movingDown, movingLeft, movingRight);
-				
-				//testing if player has arrived at destination
-				if ((unitOne.getX() == path.getX(playerEtape)*tileSize) && (unitOne.getY() == path.getY(playerEtape)*tileSize))
+				if ( (units.get(i).getStep() != units.get(i).getPath().getLength()))
 				{
-					playerEtape++;
+					// moving player to destination
+					units.get(i).goToDest(units.get(i).getPath().getX(units.get(i).getStep())*tileSize, units.get(i).getPath().getY(units.get(i).getStep())*tileSize, delta, movingUp, movingDown, movingLeft, movingRight);
+					
+					//testing if player has arrived at destination
+					if ((units.get(i).getX() == units.get(i).getPath().getX(units.get(i).getStep())*tileSize) && (units.get(i).getY() == units.get(i).getPath().getY(units.get(i).getStep())*tileSize))
+					{
+						units.get(i).incStep();
+					}
 				}
-			}
-			else
-			{
-				System.out.println("uOne Arrived");
-				path = null;
-			}
-		}
-			
-		if (path2 != null)
-		{
-			if ( (playerEtape2 != path2.getLength()))
-			{
-				// moving player to destination
-				unitTwo.goToDest(path2.getX(playerEtape2)*tileSize, path2.getY(playerEtape2)*tileSize, delta, movingUp, movingDown, movingLeft, movingRight);
-				
-				//testing if player has arrived at destination
-				if ((unitTwo.getX() == path2.getX(playerEtape2)*tileSize) && (unitTwo.getY() == path2.getY(playerEtape2)*tileSize))
+				else
 				{
-					playerEtape2++;
+					System.out.println("unit " + i + " arrived");
+					units.get(i).setPath(null);
 				}
-			}
-			else
-			{
-				System.out.println("uTwo Arrived");
-				path2 = null;
 			}
 		}
 	}
@@ -197,17 +172,20 @@ public class MainTopDownGame extends BasicGame
 		theMap.render(0 + (int)camera.getX(), 0 + (int)camera.getY());
 		
 		// player rendering
-		unitOne.getMovement().draw(unitOne.getX() + camera.getX(), unitOne.getY() + camera.getY());
-		unitTwo.getMovement().draw(unitTwo.getX() + camera.getX(), unitTwo.getY() + camera.getY());
+		for (int i = 0; i < units.size(); i++)
+		{
+			units.get(i).getMovement().draw(units.get(i).getX() + camera.getX(), units.get(i).getY() + camera.getY());
+		}
 		
 		// some indicators
-		g.drawString("playerX = " + (unitOne.getX() + camera.getX()), 600, 20);
-		g.drawString("playerY = " + (unitOne.getY() + camera.getY()), 600, 40);
 		g.drawString("mouseX = " + Mouse.getX(), 600, 60);
 		g.drawString("mouseY = " + (600 - Mouse.getY()), 600, 80);
 		g.drawString("mouseTileX = " + (int)Mouse.getX()/tileSize, 600, 100);
 		g.drawString("mouseTileY = " + (int)(600 - Mouse.getY())/tileSize, 600, 120);
-		if (path != null) { g.drawString("Path length = " + path.getLength(), 600, 160);}
+		for (int i = 0; i < units.size(); i++)
+		{
+			if (units.get(i).getPath() != null) { g.drawString("u" + i + " Path length = " + units.get(i).getPath().getLength(), 600, 140 + i * 20);}
+		}
 	}
 	
 	// Main method
