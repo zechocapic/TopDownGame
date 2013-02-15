@@ -1,5 +1,11 @@
 package org.topdowngame;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import org.lwjgl.input.Mouse;
@@ -11,6 +17,7 @@ import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.Sound;
 import org.newdawn.slick.SpriteSheet;
 import org.newdawn.slick.tiled.TiledMap;
 import org.newdawn.slick.util.pathfinding.AStarPathFinder;
@@ -32,6 +39,17 @@ public class MainTopDownGame extends BasicGame
 	// Declaration of player's animation. Need to be integrated in Player class ideally 
 	private Animation movingUp, movingDown, movingLeft, movingRight, movingNot;
 	
+	// Declaration of sound associated with player's unit spawn
+	private Sound startSound;
+	
+	// Declaration of network variables
+	private Socket echoSocket = null;
+	//private PrintWriter out = null;
+	private BufferedReader in = null;
+	//private BufferedReader stdin;
+	//private String userInput;
+	private String messageServer;
+	
 	// Constructor
 	public MainTopDownGame() 
 	{
@@ -42,7 +60,7 @@ public class MainTopDownGame extends BasicGame
 	@Override
 	public void init(GameContainer gc) throws SlickException 
 	{
-		// Initialization of map, camera, player, pathfinding
+		// Initialization of map, camera, player and path finding
 		theMap = new TiledMap("res/tilemap01.tmx");
 		thePTBMap = new PropertyTileBasedMap(theMap);
 		camera = new Camera(0f, 0f);
@@ -71,6 +89,44 @@ public class MainTopDownGame extends BasicGame
 		{
 			units.get(i).setMovement(movingNot);
 		}
+		
+		// Sound initialization
+		try
+		{
+			startSound = new Sound("res/restart.ogg");	
+		}
+		catch (SlickException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		// Network initialization
+		try
+		{
+			echoSocket = new Socket("localhost", 7);
+			//out = new PrintWriter(echoSocket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+		}
+		catch (UnknownHostException e)
+		{
+			System.err.println("No localhost");
+		}
+		catch (IOException e)
+		{
+			System.err.println("No IO for localhost");
+		}
+		// messages from server
+		if (in != null)
+		{
+			try {
+				messageServer = new String(in.readLine());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		//stdin = new BufferedReader(new InputStreamReader(System.in));
+		//out.println("Hello from a client");
 	}
 	
 	// Update method needed by superclass
@@ -90,6 +146,7 @@ public class MainTopDownGame extends BasicGame
 			int mouseYTiles = (int)((600 - Mouse.getY() - camera.getY())/tileSize);
 			units.add(new Player(mouseXTiles * tileSize, mouseYTiles * tileSize));
 			units.get(units.size() - 1).setMovement(movingNot);
+			startSound.play();
 		}
 		
 		// selecting units
@@ -156,6 +213,7 @@ public class MainTopDownGame extends BasicGame
 				}
 			}
 		}
+		
 	}
 	
 	// Render method needed by superclass
@@ -181,6 +239,7 @@ public class MainTopDownGame extends BasicGame
 		}
 		
 		// some indicators
+		g.drawString("Server = " + messageServer, 600, 40);
 		g.drawString("mouseX = " + Mouse.getX(), 600, 60);
 		g.drawString("mouseY = " + (600 - Mouse.getY()), 600, 80);
 		g.drawString("mouseTileX = " + (int)Mouse.getX()/tileSize, 600, 100);
