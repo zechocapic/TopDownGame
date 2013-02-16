@@ -3,7 +3,7 @@ package org.topdowngame;
 import org.newdawn.slick.Animation;
 import org.newdawn.slick.util.pathfinding.Path;
 
-public class Player
+public class Unit
 {
 	private float x, y;
 	private int step = 0;
@@ -11,7 +11,7 @@ public class Player
 	private Animation movement;
 	private Path path;
 	
-	public Player(float x, float y) {
+	public Unit(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}
